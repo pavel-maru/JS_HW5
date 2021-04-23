@@ -1,61 +1,79 @@
 "use strict";
 
-// 1. Создать функцию, генерирующую шахматную доску. Можно использовать любые html-теги. 
-// Доска должна быть верно разлинована на чёрные и белые ячейки. 
-// Строки должны нумероваться числами от 1 до 8, 
-// столбцы — латинскими буквами A, B, C, D, E, F, G, H.
+// 2. Сделать генерацию корзины динамической: вёрстка корзины не должна
+//    находиться в HTML-структуре. Там должен быть только div, в который
+//    будет вставляться корзина, сгенерированная на базе JS:
+//    a. Пустая корзина должна выводить строку «Корзина пуста»;
+//    b. Наполненная должна выводить «В корзине: n товаров на сумму m рублей».
 
-function chessBoard(canvas) {
+function addProductBasket(basketDesc, name, price, quantity) {
+    basketDesc.push({
+        product: name,
+        price: price,
+        quantity: quantity,
+        total: totalSum
+    });
+}
 
-    let ctx = canvas.getContext("2d");
-    const offset = 55;
-    const number = 8;
-    const arrLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+function totalSum() {
+    return this.price * this.quantity;
+}
 
-    ctx.font = "22px Arial";
-
-    // цифры
-    for (let num = number; num >= 1; num--) {
-        ctx.fillText(num, offset / 2 - 5, offset * (number - num + 2) - 5);
+function countBasketPrice(basketDesc) {
+    let sum = 0;
+    for (let i = 0; i < basketDesc.length; i++) {
+        sum += basketDesc[i].total();
     }
-    // буквы
-    for (let i = 0; i < number; i++) {
-        ctx.fillText(arrLetters[i], offset * (i + 1) + 5, offset / 2 + 5);
+    return sum;
+}
+
+function descBasketPrice(basketDesc) {
+    let str = '';
+    for (let i = 0; i < basketDesc.length; i++) {
+        str += (i + 1) + '. ' + basketDesc[i].product + ': ' + basketDesc[i].price +
+            ' * ' + basketDesc[i].quantity + ' = ' + (basketDesc[i].total()) + '\n';
     }
+    return str;
+}
 
-    // квадратики
-    for (let i = 1; i <= number; i += 2) {
-        for (let j = 1; j <= number; j += 2) {
-            drawCell(offset * j, offset * i, "white");
-            drawCell(offset * (j + 1), offset * i, "black");
-            drawCell(offset * j, offset * (i + 1), "black");
-            drawCell(offset * (j + 1), offset * (i + 1), "white");
-        }
+function basket() {
+    let content = document.getElementById("basket");
+    if (basket_ === []) {
+        content.innerHTML = 'Корзина пуста';
     }
-
-    // границы поля
-    let num1 = number + 1;
-    drawLine(offset, offset, offset, offset * num1);
-    drawLine(offset, offset, offset * num1, offset);
-    drawLine(offset * num1, offset, offset * num1, offset * num1);
-    drawLine(offset, offset * num1, offset * num1, offset * num1);
-
-    function drawCell(x, y, color) {
-        ctx.beginPath();
-        ctx.rect(x, y, offset, offset);
-        ctx.fillStyle = color;
-        ctx.fill();
-    }
-
-    function drawLine(x0, y0, x1, y1) {
-        ctx.beginPath();
-        ctx.strokeStyle = "black";
-        ctx.moveTo(x0, y0);
-        ctx.lineTo(x1, y1);
-        ctx.stroke();
+    else {
+        content.innerHTML = 'В корзину добавлены следующие товары:\n'
+            + descBasketPrice(basket_) + '\nОбщая стоимость составляет: ' + countBasketPrice(basket_);
     }
 }
 
-let canvas = document.getElementById("renderCanvas");
+Window.onload = basket;
 
-Window.onload = chessBoard(canvas);
+let basket_ = [
+    {
+        product: 'футболка',
+        price: 500,
+        quantity: 2,
+        total: totalSum
+    },
+    {
+        product: 'джинсы',
+        price: 2700,
+        quantity: 1,
+        total: totalSum
+    },
+    {
+        product: 'жилет',
+        price: 2100,
+        quantity: 1,
+        total: totalSum
+    },
+    {
+        product: 'носки',
+        price: 250,
+        quantity: 5,
+        total: totalSum
+    },
+]
+
+// alert('В корзину добавлены следующие товары:\n' + descBasketPrice(basket) + '\nОбщая стоимость составляет: ' + countBasketPrice(basket));
